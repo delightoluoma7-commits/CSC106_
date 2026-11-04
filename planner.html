@@ -1,100 +1,135 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Academic Planner & Career - Delight Oluomachi Ekeanya</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Academic Planner</title>
+  <style>
+    body { font-family: Arial; padding: 20px; text-align: center; background: #f4f4f4; }
+    nav a { margin: 0 10px; text-decoration: none; color: #0077cc; }
+    .planner-box { background: white; max-width: 700px; margin: 20px auto; padding: 20px; border-radius: 12px; }
+    input, button { padding: 10px; margin: 5px; border-radius: 6px; border: 1px solid #ccc; }
+    button { background: #0077cc; color: white; border: none; cursor: pointer; }
+    .course-chip { display: inline-block; background: #0077cc; color: white; padding: 8px 14px; border-radius: 20px; margin: 5px; cursor: pointer; font-weight: bold; }
+    .course-chip.active { background: #ff9900; }
+    .course-chip:hover { background: #005fa3; transform: scale(1.05); }
+    ul { list-style: none; padding: 0; text-align: left; }
+    li { background: #eef6ff; padding: 12px; margin: 8px 0; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+    .delete-btn { background: red; padding: 5px 10px; }
+  </style>
 </head>
-
 <body>
+  <header>
+    <h1>My Academic Planner</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="planner.html">Planner</a>
+    </nav>
+  </header>
 
-    <header>
-        <h1>My Student Portfolio</h1>
-        <nav>
-            <ul>
-                <li><a href="index.html">Home</a></li>
-                <li><a href="about.html">About Me</a></li>
-                <li><a href="projects.html">Projects</a></li>
-                <li><a href="planner.html">Academic Planner</a></li>
-                <li><a href="contact.html">Contact</a></li>
-            </ul>
-        </nav>
-    </header>
+  <div class="planner-box">
+    <h3>Add Task</h3>
+    <input type="text" id="course" placeholder="Course e.g. CSC102">
+    <input type="text" id="task" placeholder="Task e.g. Assignment">
+    <input type="date" id="date">
+    <button onclick="addTask()">Add</button>
 
-    <main>
-        <h2>My Academic Planner & Career Path</h2>
+    <div style="margin-top:20px;">
+      <h3>My Courses (Click to Filter)</h3>
+      <div id="courseList">No courses yet</div>
+      <button onclick="showAll()" style="background:#666; margin-top:10px;">Show All Tasks</button>
+    </div>
 
-        <h3>1. My Career Goal</h3>
-        <p><strong>Name:</strong> Delight Oluomachi Ekeanya</p>
-        <p><strong>Course:</strong> CSC106 - Introduction to Cybersecurity</p>
-        <p><strong>Career Goal:</strong> To become a <strong>SOC Analyst (Security Operations Center Analyst)</strong>
-        </p>
-        <p><strong>Why I chose this career:</strong> I want to protect organizations from cyber attacks, monitor
-            security threats, and help keep people's data safe. I love investigating security incidents.</p>
+    <h3 style="margin-top:20px;">Tasks: <span id="filterName">All</span></h3>
+    <ul id="taskList"></ul>
+  </div>
 
-        <h4>Skills I am Learning:</h4>
-        <ul>
-            <li>Network Security & Monitoring</li>
-            <li>Threat Detection</li>
-            <li>Incident Response</li>
-            <li>HTML, CSS for portfolio</li>
-            <li>Security Operations (SOC)</li>
-        </ul>
+<script>
+let tasks = JSON.parse(localStorage.getItem("myPlanner")) || [];
+let currentFilter = "All";
 
-        <h3>2. My Weekly Academic Plan</h3>
-        <table border="1" cellpadding="10" cellspacing="0">
-            <tr>
-                <th>Day</th>
-                <th>Morning (8am - 12pm)</th>
-                <th>Afternoon (1pm - 5pm)</th>
-                <th>Evening (6pm - 9pm)</th>
-            </tr>
-            <tr>
-                <td>Monday</td>
-                <td>CSC106 Class</td>
-                <td>Study Cybersecurity Notes</td>
-                <td>Practice HTML</td>
-            </tr>
-            <tr>
-                <td>Tuesday</td>
-                <td>Library - Research SOC</td>
-                <td>Assignment</td>
-                <td>Video Editing for Portfolio</td>
-            </tr>
-            <tr>
-                <td>Wednesday</td>
-                <td>CSC106 Practical</td>
-                <td>Group Study</td>
-                <td>Rest</td>
-            </tr>
-            <tr>
-                <td>Thursday</td>
-                <td>Online Course - Threat Detection</td>
-                <td>Portfolio Building</td>
-                <td>Revision</td>
-            </tr>
-            <tr>
-                <td>Friday</td>
-                <td>Project Work</td>
-                <td>Meet Lecturer</td>
-                <td>Weekend Plan</td>
-            </tr>
-        </table>
+function addTask() {
+  let course = document.getElementById("course").value.trim().toUpperCase();
+  let task = document.getElementById("task").value.trim();
+  let date = document.getElementById("date").value;
+  if(!course || !task || !date) { alert("Fill all fields"); return; }
+  
+  tasks.push({course, task, date});
+  localStorage.setItem("myPlanner", JSON.stringify(tasks));
+  
+  document.getElementById("course").value = "";
+  document.getElementById("task").value = "";
+  document.getElementById("date").value = "";
+  
+  displayCourses();
+  displayTasks();
+}
 
-        <h3>3. My Semester Goals</h3>
-        <ol>
-            <li>Finish CSC106 Portfolio with all 5 pages</li>
-            <li>Learn to embed image and video correctly</li>
-            <li>Get A in CSC106</li>
-            <li>Build my first SOC Lab</li>
-        </ol>
+function displayCourses() {
+  let courseDiv = document.getElementById("courseList");
+  let uniqueCourses = [...new Set(tasks.map(t => t.course))];
+  
+  if(uniqueCourses.length === 0) {
+    courseDiv.innerHTML = "No courses yet - add a task";
+    return;
+  }
+  
+  courseDiv.innerHTML = "";
+  uniqueCourses.forEach(c => {
+    let chip = document.createElement("span");
+    chip.className = "course-chip" + (currentFilter === c ? " active" : "");
+    chip.innerText = c;
+    chip.onclick = () => filterCourse(c); // THIS MAKES IT CLICKABLE
+    courseDiv.appendChild(chip);
+  });
+}
 
-        <p><strong>Contact:</strong> 09074046324</p>
+function filterCourse(courseName) {
+  currentFilter = courseName;
+  document.getElementById("filterName").innerText = courseName;
+  displayCourses();
+  displayTasks();
+}
 
-    </main>
+function showAll() {
+  currentFilter = "All";
+  document.getElementById("filterName").innerText = "All";
+  displayCourses();
+  displayTasks();
+}
 
+function displayTasks() {
+  let list = document.getElementById("taskList");
+  list.innerHTML = "";
+  
+  let filtered = currentFilter === "All" ? tasks : tasks.filter(t => t.course === currentFilter);
+  
+  if(filtered.length === 0) {
+    list.innerHTML = "<li>No tasks for " + currentFilter + "</li>";
+    return;
+  }
+  
+  filtered.forEach((t, i) => {
+    // find real index for delete
+    let realIndex = tasks.indexOf(t);
+    let li = document.createElement("li");
+    li.innerHTML = `<span><strong>${t.course}</strong> - ${t.task} <br><small>Due: ${t.date}</small></span>
+                    <button class="delete-btn" onclick="deleteTask(${realIndex})">X</button>`;
+    list.appendChild(li);
+  });
+}
+
+function deleteTask(index) {
+  tasks.splice(index, 1);
+  localStorage.setItem("myPlanner", JSON.stringify(tasks));
+  displayCourses();
+  displayTasks();
+  if(tasks.length === 0) showAll();
+}
+
+displayCourses();
+displayTasks();
+</script>
 </body>
-
 </html>
